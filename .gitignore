@@ -2,4 +2,4 @@ build/*
 !build/.gitkeep
 
 vcpkg/*
-!vcpkg/installed/vcpkg/status
+!vcpkg/installed/vcpkg/.gitkeep
