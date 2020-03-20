@@ -43,7 +43,9 @@ class BitmapFont
 		
 		void setText(const char * text = "example text");
 		FT_Vector calcTextureSize();
+		FT_Vector calcTextureSizeFromAtlas();
 		void renderTexture();
+		void print_glyph_info(glyph_info& info);
 		void renderTextureFromAtlas();
 		void draw(unsigned int screen_width, unsigned int screen_height);
 

@@ -25,6 +25,13 @@ class BitmapFontAtlas
 		inline const std::vector<glyph_info>& getGlyphsInfos() const { return m_glyph_infos;  }
 
 		unsigned char * pixels;
+		unsigned int atlas_width;
+		unsigned int atlas_height;
+		unsigned int atlas_face_height;
+		unsigned int ascender;
+		unsigned int descender;
+
+
 	private:
 	
 		FT_Library    m_ft;

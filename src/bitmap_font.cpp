@@ -96,6 +96,45 @@ FT_Vector BitmapFont::calcTextureSize()
 	return ft_vec;
 }
 
+FT_Vector BitmapFont::calcTextureSizeFromAtlas()
+{
+	FT_Vector ft_vec;
+
+	long int width = 0;
+	long int height = 0;
+	long int height_max = 0;	
+	unsigned int num_chars = strlen((const char *)m_text);
+	for (size_t i = 0; i < num_chars; i++)
+	{
+		if (m_text[i] > m_atlas->getGlyphsInfos().size())
+		{
+			printf("char is not present in atlas, try adding more Glyphs\n");
+		}else{
+
+			glyph_info info = m_atlas->getGlyphsInfos()[m_text[i]];
+			width += info.bitmap_width;
+			
+
+			int full_height = info.bitmap_rows + (info.bitmap_rows -info.y_off);
+			if (full_height > height_max)
+			{
+				height_max = full_height;
+			}
+		}
+
+
+	}
+
+	height += height_max;
+
+	height = m_atlas->atlas_face_height;
+
+	ft_vec.x = width;
+	ft_vec.y = height;
+
+	return ft_vec;
+}
+
 void BitmapFont::renderTexture()
 {
 	if( m_text == nullptr)
@@ -140,15 +179,7 @@ void BitmapFont::renderTexture()
 			printf("--- Error Loading Char\n");
 		}
 		
-		
-		
-		//~ printf("Metrics \n");
-		//~ printf("\t width  : %ld\n", m_face->glyph->metrics.width / 64);
-		//~ printf("\t height : %ld\n\n", m_face->glyph->metrics.height / 64);
-		
-		//~ printf("\t horiBearingX : %ld\n", m_face->glyph->metrics.horiBearingX / 64);
-		//~ printf("\t horiBearingY : %ld\n", m_face->glyph->metrics.horiBearingY / 64);
-		//~ printf("-------------------------------------- \n");
+
 				
 		long int char_start_x = m_face->glyph->bitmap_left;
 		long int char_start_y = m_face->glyph->bitmap_top;
@@ -156,16 +187,7 @@ void BitmapFont::renderTexture()
 		FT_Bitmap ft_bitmap = m_face->glyph->bitmap;
 		int ft_rows = ft_bitmap.rows;
 		int ft_width = ft_bitmap.width;	
-		
-		//~ printf("char texture infos for ( %c ): \n", m_text[i]);
-		//~ printf("\tbitmap_left : %d \n", m_face->glyph->bitmap_left);
-		//~ printf("\tbitmap_top : %d \n\n", m_face->glyph->bitmap_top);
-		
-		//~ printf("\tbitmap.rows : %d \n", ft_bitmap.rows);
-		//~ printf("\tbitmap.width : %d \n\n", ft_bitmap.width);
-		
-		//~ printf("\tadvance.x : %ld \n", m_face->glyph->advance.x / 64);
-		//~ printf("\tadvance.y : %ld \n", m_face->glyph->advance.y / 64);
+
 				
 		long int advance_x = m_face->glyph->advance.x / 64;
 		
@@ -222,7 +244,7 @@ void BitmapFont::renderTexture()
 
 }
 
-static void print_glyph_info(glyph_info& info)
+void BitmapFont::print_glyph_info(glyph_info& info)
 {
 	
 
@@ -240,24 +262,145 @@ static void print_glyph_info(glyph_info& info)
 
 	printf("\tbitmap_idth :  %d\n", info.bitmap_width);
 	printf("\tbitmap_rows :  %d\n", info.bitmap_rows);
+
+
+	for (int y = 0; y < info.bitmap_rows; y++)
+	{
+		for (int x = 0; x < info.bitmap_width; x++)
+		{
+			int index = ((y+info.y0) * m_atlas->atlas_width) + (info.x0)+ x;
+			if (m_atlas->pixels[index] < 100) {
+				printf("-");
+			}
+			else {
+				printf("0");
+			}
+		}
+		printf("\n");
+
+	}
 }
 
 void BitmapFont::renderTextureFromAtlas()
 {
 	printf("render from atlas\n");
 
-	auto infos = m_atlas->getGlyphsInfos();
-	for (auto info : infos)
+	if (m_text == nullptr)
 	{
-		
-		
-		if (info.ch == 'i' || info.ch == 'j' || info.ch == '^')
-		{
-		
-			print_glyph_info(info);
-		}
-			
+		setText("default text");
 	}
+
+	FT_Vector tex_size = calcTextureSizeFromAtlas();
+
+	//printf("tex size x : %d\n", tex_size.x);
+	//printf("tex size y : %d\n", tex_size.y);
+
+	auto infos = m_atlas->getGlyphsInfos();
+	//for (auto info : infos)
+	//{
+	//	
+	//	
+	//	if (info.ch == 'i' || info.ch == 'j' || info.ch == '^')
+	//	{
+	//	
+	//		print_glyph_info(info);
+	//	}
+	//		
+	//}
+
+	unsigned int n_pixels = tex_size.x * tex_size.y;
+
+	std::vector<unsigned char> pixels;
+	//pixels.reserve(n_pixels * 4);
+	//for (size_t i = 0; i < n_pixels * 4; i++) {
+
+	//	pixels.emplace_back(255);
+	//}
+
+	int num_chars = strlen(m_text);
+	int error;
+	long int cursor_x = 0;
+	long int cursor_y = 0;
+	for (size_t i = 0; i < num_chars; i++)
+	{
+
+		glyph_info info = infos[m_text[i]];
+
+		long int char_start_x = info.x_off;
+		long int char_start_y = info.y_off;
+
+		
+		int ft_rows = info.bitmap_rows;
+		int ft_width = info.bitmap_width;
+
+
+		long int advance_x = info.advance;
+
+		cursor_x += char_start_x;
+
+		if (cursor_x < 0)
+			cursor_x = 0;
+
+		cursor_y = char_start_y;
+
+		for (int y = 0; y < ft_rows; y++)
+		{
+			
+			for (int x = 0; x < ft_width; x++)
+			{
+				
+				int value_index = ((y + info.y0) * m_atlas->atlas_width) + (info.x0) + x;
+				unsigned char value = m_atlas->pixels[value_index];
+				
+
+				int offset_y = (char_start_y - tex_size.y) - m_atlas->descender;
+				//unsigned int pix_index = ((y - offset_y)* tex_size.x) + (cursor_x + x);
+				unsigned int pix_index = ((y)* tex_size.x) + (cursor_x + x);
+
+
+				if (pix_index < 0 || pix_index >(n_pixels - 1)) {
+					printf("bad pixels index\n");
+					continue;
+				}
+				else {
+					//printf("%d,", pix_index);
+					//pixels[(pix_index * 4) + 0] = 255;
+					//pixels[(pix_index * 4) + 1] = 255;
+					//pixels[(pix_index * 4) + 2] = 255;
+					//pixels[(pix_index * 4) + 3] = value;
+
+					pixels.push_back(255);
+					pixels.push_back(255);
+					pixels.push_back(255);
+					pixels.push_back(255);
+				}
+
+			}
+			//printf("\n");
+
+			cursor_y += 1;
+
+		}
+
+		//printf("\n");
+
+		cursor_x += advance_x - char_start_x;
+
+
+
+		//~ cursor_y += char_start_y;
+
+
+
+
+	}
+
+	m_texture.setData(tex_size.x, tex_size.y, pixels.data());
+	printf("--- set Font texture Data\n");
+
+	//for (size_t i = 0; i < n_pixels * 4; i++) {
+	//	std::cout << (int)pixels[i] << std::endl;
+	//}
 }
 
 void BitmapFont::setText(const char * text)

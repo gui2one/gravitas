@@ -101,6 +101,14 @@ static void add_iss_position()
 std::thread thread(add_iss_position);
 
 
+bool camera_orbit_started = false;
+bool b_show_fps = true;
+float camera_u = 0.5f;
+float camera_v = 0.0f;
+float camera_orbit_radius = 3.0f;
+float old_mouse_x = 0.0f;
+float old_mouse_y = 0.0f;
+float mouse_pause_time = 0.0;
 
 static void refresh_fps()
 {
@@ -109,9 +117,14 @@ static void refresh_fps()
 	if( fps_refresh_millis_counter > fps_refresh_delay * 1000)
 	{
 		fps_refresh_millis_counter = 0;
-		sprintf(fps_txt, " %.1f fps", (1.0f/ (timer.getDeltaMillis() / 1000.0f)));			
-		bitmap_font.setText(fps_txt);
-		bitmap_font.renderTexture();
+		sprintf(fps_txt, " %.1f fps", (1.0f/ (timer.getDeltaMillis() / 1000.0f)));		
+
+		if (b_show_fps)
+		{
+			//bitmap_font.setText(fps_txt);
+			//bitmap_font.setText("AB");
+			//bitmap_font.renderTextureFromAtlas();
+		}
 	}
 	fps_refresh_millis_counter += timer.getDeltaMillis();
 	fps_refresh_frames_counter++;
@@ -160,14 +173,7 @@ SceneBackground scene_bg;
 
 
 
-bool camera_orbit_started = false;
-bool b_show_fps = false;
-float camera_u = 0.5f;
-float camera_v = 0.0f;
-float camera_orbit_radius = 3.0f;
-float old_mouse_x = 0.0f;
-float old_mouse_y = 0.0f;
-float mouse_pause_time = 0.0;
+
 
 
 
@@ -350,9 +356,9 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	g_print("---------------------------\n");
 	
 
-	bitmap_font.setAtlas(font_atlas);
+	
 
-	bitmap_font.renderTextureFromAtlas();
+	
 
 	//int inc = 0;
 
@@ -375,12 +381,13 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	font_shader.createShader();	
 	
 	bitmap_font.init(font_shader);
-	bitmap_font.setText("Ladies and Gentlemen ... The Earth TADA !!!");
+	bitmap_font.setAtlas(font_atlas);
+	bitmap_font.setText("AB");
 	bitmap_font.setHAlign(Orbiter::FONT_HALIGN_START);
 	bitmap_font.setVAlign(Orbiter::FONT_VALIGN_BOTTOM);
 	
 	//~ bitmap_font.setText((const char *)test_char);
-	bitmap_font.renderTexture();
+	bitmap_font.renderTextureFromAtlas();
 	
 	glEnable(GL_BLEND);	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -740,7 +747,7 @@ static void activate( GtkApplication *app, gpointer user_data)
 	
 	fps_checkbtn = gtk_check_button_new_with_label("Show fps");
 	g_signal_connect(GTK_TOGGLE_BUTTON(fps_checkbtn), "toggled", G_CALLBACK(on_show_fps_toggled), NULL);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fps_checkbtn), FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fps_checkbtn), b_show_fps);
 	gtk_container_add(GTK_CONTAINER(fps_box), fps_checkbtn);
 	
 	fps_label = gtk_label_new("fps");

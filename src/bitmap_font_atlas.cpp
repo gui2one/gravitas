@@ -40,7 +40,9 @@ void BitmapFontAtlas::renderAtlas()
 	while (tex_width < max_dim) tex_width <<= 1;
 	int tex_height = tex_width;
 
-	
+	// important
+	atlas_width = tex_width;
+	atlas_height = tex_height;
 	
 	int max_width = 0;
 	int max_height = 0;
@@ -101,6 +103,9 @@ void BitmapFontAtlas::renderAtlas()
 		
 	}
 
+	atlas_face_height = (m_face->ascender / 64) - (m_face->descender / 64);
+	ascender = m_face->ascender / 64;
+	descender = m_face->descender / 64;
 
 	FT_Done_FreeType(m_ft);
 	unsigned char * png_pixels = (unsigned char*)calloc(tex_width * tex_height * 4, 255);
