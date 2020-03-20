@@ -1,0 +1,5 @@
+build/*
+!build/.gitkeep
+
+vcpkg/*
+!vcpkg/installed/vcpkg/status
