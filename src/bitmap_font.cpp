@@ -112,10 +112,10 @@ FT_Vector BitmapFont::calcTextureSizeFromAtlas()
 		}else{
 
 			glyph_info info = m_atlas->getGlyphsInfos()[m_text[i]];
-			width += info.bitmap_width;
+			width += info.advance;
 			
 
-			int full_height = info.bitmap_rows + (info.bitmap_rows -info.y_off);
+			int full_height = info.bitmap_rows + (info.bitmap_rows - info.y_off);
 			if (full_height > height_max)
 			{
 				height_max = full_height;
@@ -283,7 +283,7 @@ void BitmapFont::print_glyph_info(glyph_info& info)
 
 void BitmapFont::renderTextureFromAtlas()
 {
-	printf("render from atlas\n");
+	//printf("render from atlas\n");
 
 	if (m_text == nullptr)
 	{
@@ -292,35 +292,29 @@ void BitmapFont::renderTextureFromAtlas()
 
 	FT_Vector tex_size = calcTextureSizeFromAtlas();
 
+	Mesh quad_mesh = Utils::makeSimpleQuad((1.0f / ((float)tex_size.y / (float)tex_size.x)) * m_atlas->getFontSize(), 1.0f  * m_atlas->getFontSize());
+
+	m_mesh_object.setMesh(quad_mesh);
+
 	//printf("tex size x : %d\n", tex_size.x);
 	//printf("tex size y : %d\n", tex_size.y);
 
-	auto infos = m_atlas->getGlyphsInfos();
-	//for (auto info : infos)
-	//{
-	//	
-	//	
-	//	if (info.ch == 'i' || info.ch == 'j' || info.ch == '^')
-	//	{
-	//	
-	//		print_glyph_info(info);
-	//	}
-	//		
-	//}
-
 	unsigned int n_pixels = tex_size.x * tex_size.y;
 
-	std::vector<unsigned char> pixels;
-	//pixels.reserve(n_pixels * 4);
-	//for (size_t i = 0; i < n_pixels * 4; i++) {
+	std::vector<unsigned char> pixels_from_atlas;
+	pixels_from_atlas.reserve(n_pixels * 4);
+	for (size_t i = 0; i < n_pixels * 4; i++) {
 
-	//	pixels.emplace_back(255);
-	//}
+		pixels_from_atlas.emplace_back(0);
+	}
 
 	int num_chars = strlen(m_text);
-	int error;
+	
 	long int cursor_x = 0;
 	long int cursor_y = 0;
+
+	auto infos = m_atlas->getGlyphsInfos();
+
 	for (size_t i = 0; i < num_chars; i++)
 	{
 
@@ -354,25 +348,25 @@ void BitmapFont::renderTextureFromAtlas()
 				
 
 				int offset_y = (char_start_y - tex_size.y) - m_atlas->descender;
-				//unsigned int pix_index = ((y - offset_y)* tex_size.x) + (cursor_x + x);
-				unsigned int pix_index = ((y)* tex_size.x) + (cursor_x + x);
+				unsigned int pix_index = ((y - offset_y)* tex_size.x) + (cursor_x - char_start_x + x);
+				
 
 
 				if (pix_index < 0 || pix_index >(n_pixels - 1)) {
-					printf("bad pixels index\n");
+					//printf("bad pixels index\n");
 					continue;
 				}
 				else {
 					//printf("%d,", pix_index);
-					//pixels[(pix_index * 4) + 0] = 255;
-					//pixels[(pix_index * 4) + 1] = 255;
-					//pixels[(pix_index * 4) + 2] = 255;
-					//pixels[(pix_index * 4) + 3] = value;
+					pixels_from_atlas[(pix_index * 4) + 0] = 255;
+					pixels_from_atlas[(pix_index * 4) + 1] = 255;
+					pixels_from_atlas[(pix_index * 4) + 2] = 255;
+					pixels_from_atlas[(pix_index * 4) + 3] = value;
 
-					pixels.push_back(255);
-					pixels.push_back(255);
-					pixels.push_back(255);
-					pixels.push_back(255);
+					//pixels_from_atlas.push_back(255);
+					//pixels_from_atlas.push_back(255);
+					//pixels_from_atlas.push_back(255);
+					//pixels_from_atlas.push_back(value);
 				}
 
 			}
@@ -395,12 +389,8 @@ void BitmapFont::renderTextureFromAtlas()
 
 	}
 
-	m_texture.setData(tex_size.x, tex_size.y, pixels.data());
-	printf("--- set Font texture Data\n");
+	m_texture.setData(tex_size.x, tex_size.y, pixels_from_atlas.data());
 
-	//for (size_t i = 0; i < n_pixels * 4; i++) {
-	//	std::cout << (int)pixels[i] << std::endl;
-	//}
 }
 
 void BitmapFont::setText(const char * text)
@@ -428,7 +418,15 @@ void BitmapFont::draw(unsigned int screen_width, unsigned int screen_height)
 	GLCall(glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection)));	
 	
 	
-	float quad_width = 1.0f / ((float)m_texture_size.y / (float)m_texture_size.x);
+	float quad_width;
+	if (m_atlas != nullptr) {
+		quad_width = 1.0f / ((float)m_atlas->atlas_width / (float)m_atlas->atlas_height);
+	}
+	else {
+		//quad_width = 1.0f / ((float)m_texture_size.y / (float)m_texture_size.x);
+		quad_width = 1.0f / ((float)m_atlas->atlas_width / (float)m_atlas->atlas_height);
+	}
+	
 	glm::mat4 model = glm::mat4(1.0);
 	
 	float align_pos_x = 0.0f;

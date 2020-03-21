@@ -24,6 +24,9 @@ class BitmapFontAtlas
 
 		inline const std::vector<glyph_info>& getGlyphsInfos() const { return m_glyph_infos;  }
 
+		inline const int getFontSize() { return m_font_size;  }
+		inline void setFontSize(int _size) { m_font_size = _size; }
+
 		unsigned char * pixels;
 		unsigned int atlas_width;
 		unsigned int atlas_height;
@@ -37,7 +40,7 @@ class BitmapFontAtlas
 		FT_Library    m_ft;
 		FT_Face       m_face;
 		
-		int m_font_size = 32;
+		int m_font_size = 24;
 		
 
 		std::vector<glyph_info> m_glyph_infos;

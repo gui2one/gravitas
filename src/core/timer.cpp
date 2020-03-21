@@ -27,10 +27,12 @@ void Timer::update()
 	auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 	m_old_millis = m_millis;
 	m_millis = (int)millis.count();
+
+	m_delta_millis = m_millis - m_old_millis;
 	//~ std::cout << "milliseconds : " << (millis.count()) << std::endl;
 }
 
 int Timer::getDeltaMillis()
 {
-	return m_millis - m_old_millis;
+	return m_delta_millis;
 }

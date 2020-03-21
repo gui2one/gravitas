@@ -33,7 +33,7 @@ void BitmapFontAtlas::renderAtlas()
 	int face_height = m_face->max_advance_height / 64;	
 
 
-	FT_Set_Char_Size(m_face, 0, m_font_size << 6, 72, 72);
+	//FT_Set_Char_Size(m_face, 0, m_font_size << 6, 72, 72);
 
 	int max_dim = (1 + (m_face->size->metrics.height >> 6)) * ceilf(sqrtf(m_num_glyphs));
 	int tex_width = 1;
@@ -103,7 +103,8 @@ void BitmapFontAtlas::renderAtlas()
 		
 	}
 
-	atlas_face_height = (m_face->ascender / 64) - (m_face->descender / 64);
+	atlas_face_height = ((m_face->ascender / 64) - (m_face->descender / 64)) / (32 / m_font_size ); /// 32 !!!!??????????????????????????
+	
 	ascender = m_face->ascender / 64;
 	descender = m_face->descender / 64;
 
@@ -120,6 +121,7 @@ void BitmapFontAtlas::renderAtlas()
 	stbi_write_png("./share/atlas.png",tex_width,tex_height,4, png_pixels, tex_width * 4);
 
 	printf("-- DONE Font Atlas\n");
+	//printf("atlas face Height : %d\n", atlas_face_height);
 	//printf("wrote file\n");	
 }
 

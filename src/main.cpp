@@ -122,8 +122,9 @@ static void refresh_fps()
 		if (b_show_fps)
 		{
 			//bitmap_font.setText(fps_txt);
-			//bitmap_font.setText("AB");
-			//bitmap_font.renderTextureFromAtlas();
+			bitmap_font.setText("abc^");
+
+			bitmap_font.renderTextureFromAtlas();
 		}
 	}
 	fps_refresh_millis_counter += timer.getDeltaMillis();
@@ -454,7 +455,8 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 {
 
 	timer.update();
-	
+	refresh_fps();
+
 	int allocated_width = gtk_widget_get_allocated_width(GTK_WIDGET(gl_area));
 	int allocated_height = gtk_widget_get_allocated_height(GTK_WIDGET(gl_area));
 	//~ g_print("\nrectangle width: %d\n", allocated_width);	
@@ -466,7 +468,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	
 	iss_sim_step();
 
-	refresh_fps();
+	
 
 	
 	gtk_label_set_text(GTK_LABEL(fps_label), fps_txt);
@@ -476,7 +478,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 		
 
 		//~ bitmap_font.setText((const char *) fps_txt);
-		//~ bitmap_font.renderTexture();
+		//~ bitmap_font.renderTextureFromAtlas();
 	}
 	GLCall(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 	glEnable(GL_DEPTH_TEST);
@@ -659,7 +661,7 @@ static void activate( GtkApplication *app, gpointer user_data)
 	GL_window = gtk_application_window_new(app);
 	gtk_window_set_default_size(GTK_WINDOW(GL_window), 1280,720);
 	gtk_window_set_title(GTK_WINDOW(GL_window), "Orbiter GL");
-	gtk_window_set_type_hint(GTK_WINDOW(GL_window), GDK_WINDOW_TYPE_HINT_DIALOG);
+	//gtk_window_set_type_hint(GTK_WINDOW(GL_window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	
 	
 	
@@ -715,7 +717,7 @@ static void activate( GtkApplication *app, gpointer user_data)
 	
 	gl_area = gtk_gl_area_new();
 	
-	gtk_gl_area_set_required_version(GTK_GL_AREA(gl_area), 4, 0);
+	gtk_gl_area_set_required_version(GTK_GL_AREA(gl_area), 5, 0);
 
 	gtk_widget_add_events(gl_area, 
 							GDK_BUTTON_PRESS_MASK | 

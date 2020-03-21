@@ -48,6 +48,7 @@ class BitmapFont
 		void print_glyph_info(glyph_info& info);
 		void renderTextureFromAtlas();
 		void draw(unsigned int screen_width, unsigned int screen_height);
+		
 
 		inline void setAtlas(BitmapFontAtlas& atlas) { m_atlas = &atlas; }
 		inline const BitmapFontAtlas* getAtlas() { return m_atlas; }
@@ -55,7 +56,7 @@ class BitmapFont
 	private:
 	
 	
-	unsigned int m_font_size = 14;
+	unsigned int m_font_size = 16;
 	FT_Library  m_library;
 	FT_Face     m_face;	
 	Texture m_texture;
@@ -72,7 +73,7 @@ class BitmapFont
 	glm::vec2 m_position = glm::vec2(0.0, 0.0);
 
 
-	BitmapFontAtlas * m_atlas;
+	BitmapFontAtlas * m_atlas = nullptr;
 		/* add your private declarations */
 };
 } // end namespace
