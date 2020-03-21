@@ -121,8 +121,8 @@ static void refresh_fps()
 
 		if (b_show_fps)
 		{
-			//bitmap_font.setText(fps_txt);
-			bitmap_font.setText("abc^");
+			bitmap_font.setText(fps_txt);
+			//bitmap_font.setText("abc^");
 
 			bitmap_font.renderTextureFromAtlas();
 		}
@@ -382,13 +382,14 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	font_shader.createShader();	
 	
 	bitmap_font.init(font_shader);
+	bitmap_font.setPosition(glm::vec2(-(float)allocated_width / 2.0, -(float)allocated_height / 2.0));
 	bitmap_font.setAtlas(font_atlas);
-	bitmap_font.setText("AB");
+	//bitmap_font.setText("AB");
 	bitmap_font.setHAlign(Orbiter::FONT_HALIGN_START);
 	bitmap_font.setVAlign(Orbiter::FONT_VALIGN_BOTTOM);
-	
-	//~ bitmap_font.setText((const char *)test_char);
-	bitmap_font.renderTextureFromAtlas();
+	//
+
+	//bitmap_font.renderTextureFromAtlas();
 	
 	glEnable(GL_BLEND);	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -474,11 +475,11 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	gtk_label_set_text(GTK_LABEL(fps_label), fps_txt);
 	if( b_show_fps)
 	{
-		bitmap_font.setPosition(glm::vec2(-(float)allocated_width / 2.0, -(float)allocated_height / 2.0));
+		//bitmap_font.setPosition(glm::vec2(-(float)allocated_width / 2.0, -(float)allocated_height / 2.0));
 		
 
-		//~ bitmap_font.setText((const char *) fps_txt);
-		//~ bitmap_font.renderTextureFromAtlas();
+		bitmap_font.setText((const char *) fps_txt);
+		bitmap_font.renderTextureFromAtlas();
 	}
 	GLCall(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 	glEnable(GL_DEPTH_TEST);
