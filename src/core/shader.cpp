@@ -24,21 +24,34 @@ std::string loadShaderFile(std::string path){
 
 
 
-void Shader::loadVertexShaderSource(std::string filePath){
+void Shader::loadVertexShaderSource(std::string filePath)
+{
+	vertFilePath = filePath;
 	vertexShaderSource = loadShaderFile(filePath);
 }
-void Shader::loadFragmentShaderSource(std::string filePath){
+void Shader::loadFragmentShaderSource(std::string filePath)
+{
+	fragFilePath = filePath;
 	fragmentShaderSource = loadShaderFile(filePath);
 }
 
-std::string Shader::getVertexShaderSource(){
+std::string Shader::getVertexShaderSource()
+{
 	return vertexShaderSource;
 }
-std::string Shader::getFragmentShaderSource(){
+
+
+std::string Shader::getFragmentShaderSource()
+{
 	return fragmentShaderSource;
 }
 
-
+void Shader::reload()
+{
+	loadVertexShaderSource(vertFilePath);
+	loadFragmentShaderSource(fragFilePath);
+	createShader();
+}
 
 
 
@@ -67,22 +80,27 @@ unsigned int Shader::compileShader(unsigned int type, const std::string& source)
 
 
 
-unsigned int Shader::createShader(){
-        m_id = glCreateProgram();
-        unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-        unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+unsigned int Shader::createShader()
+{
 
-        glAttachShader(m_id, vs);
-        glAttachShader(m_id, fs);
+	if (m_id)
+		glDeleteProgram(m_id);
 
-        glLinkProgram(m_id);
-        glValidateProgram(m_id);
+    m_id = glCreateProgram();
+    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    glAttachShader(m_id, vs);
+    glAttachShader(m_id, fs);
+
+    glLinkProgram(m_id);
+    glValidateProgram(m_id);
 
 
-        glDeleteShader(vs);
-        glDeleteShader(fs);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
 
-        return m_id;
+    return m_id;
 }
 
 

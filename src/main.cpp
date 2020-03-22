@@ -52,6 +52,7 @@ GtkTreeSelection * selection;
 bool b_auto_rotate = true;
 GtkWidget * auto_rotate_checkbtn;
 GtkWidget * fps_checkbtn;
+GtkWidget * reload_shader_btn;
 float fps_refresh_delay = 1.0;
 unsigned int fps_refresh_millis_counter = 0;
 unsigned int fps_refresh_frames_counter = 0;
@@ -391,6 +392,8 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 
 	//bitmap_font.renderTextureFromAtlas();
 	
+	glEnable(GL_SMOOTH);
+	
 	glEnable(GL_BLEND);	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
@@ -475,7 +478,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	gtk_label_set_text(GTK_LABEL(fps_label), fps_txt);
 	if( b_show_fps)
 	{
-		//bitmap_font.setPosition(glm::vec2(-(float)allocated_width / 2.0, -(float)allocated_height / 2.0));
+		bitmap_font.setPosition(glm::vec2(-(float)allocated_width / 2.0, -(float)allocated_height / 2.0));
 		
 
 		bitmap_font.setText((const char *) fps_txt);
@@ -511,7 +514,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	
 	glEnable(GL_DEPTH_TEST);
 	
-	
+	glEnable(GL_MULTISAMPLE_ARB);
 	float second_fraction = (float)timer.getDeltaMillis() / 1000.0;
 	float angle = (360.0) * (second_fraction /( 60 * 60 * 24.0));
 
@@ -524,6 +527,9 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	traj_test.setRotationZ( traj_test.getRotation().z + (angle * time_scale));
 	traj_test.render(camera);
 	
+
+	
+
 	//~ unit_traj.render(camera);
 	
 	
@@ -646,6 +652,12 @@ static void on_show_fps_toggled (GtkToggleButton *togglebutton, gpointer user_da
 }
 
 
+static void on_reload_shader_btn_pressed(GtkButton *button, gpointer user_data)
+{
+	g_print("reload\n");
+	earth->getShader().reload();
+}
+
 static gboolean app_quit(GtkWidget * widget, GdkEvent * event, gpointer user_data)
 {
 	g_print("quitting Orbiter\n");
@@ -752,6 +764,11 @@ static void activate( GtkApplication *app, gpointer user_data)
 	g_signal_connect(GTK_TOGGLE_BUTTON(fps_checkbtn), "toggled", G_CALLBACK(on_show_fps_toggled), NULL);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fps_checkbtn), b_show_fps);
 	gtk_container_add(GTK_CONTAINER(fps_box), fps_checkbtn);
+
+	reload_shader_btn = gtk_button_new_with_label("Reload Xhader");
+	g_signal_connect(GTK_BUTTON(reload_shader_btn), "pressed", G_CALLBACK(on_reload_shader_btn_pressed), NULL);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reload_shader_btn), b_show_fps);
+	gtk_container_add(GTK_CONTAINER(fps_box), reload_shader_btn);
 	
 	fps_label = gtk_label_new("fps");
 	gtk_label_set_xalign(GTK_LABEL(fps_label), 0.0f);

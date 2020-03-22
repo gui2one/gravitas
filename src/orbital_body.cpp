@@ -18,12 +18,12 @@ void OrbitalBody::init()
 
 	
 	
-	Mesh mesh = Utils::makeSimpleSphere(35,25, m_radius);
+	Mesh mesh = Utils::makeSimpleSphere(60,40, m_radius);
 	m_mesh_object.setMesh(mesh);
 	
 	
-	m_shader.loadVertexShaderSource("../../src/res/shaders/basic_shader.vert");
-	m_shader.loadFragmentShaderSource("../../src/res/shaders/basic_shader.frag");
+	m_shader.loadVertexShaderSource("../../src/res/shaders/planet_shader.vert");
+	m_shader.loadFragmentShaderSource("../../src/res/shaders/planet_shader.frag");
 	m_shader.createShader();
 	
 	

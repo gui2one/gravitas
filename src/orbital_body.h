@@ -25,6 +25,8 @@ class OrbitalBody : public Entity3d
 		inline void setDensity(float density){ m_density = density; }
 		inline float getDensity() { return m_density; }
 		
+
+		inline Shader& getShader() { return m_shader;  }
 		
 		inline void loadTexture(const char * path)
 		{ 

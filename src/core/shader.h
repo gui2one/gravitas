@@ -19,12 +19,17 @@ class Shader
 		
 		std::string getVertexShaderSource();
 		std::string getFragmentShaderSource();
+
+		void reload();
 		
 		void useProgram();
 		
 	private:
 		std::string vertexShaderSource;
 		std::string fragmentShaderSource;
+
+		std::string vertFilePath;
+		std::string fragFilePath;
 		/* add your private declarations */
 };
 
