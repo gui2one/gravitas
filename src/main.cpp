@@ -20,7 +20,7 @@ FT_Library  ft_library;
 FT_Face     ft_face;
 
 
-Renderer renderer;
+Orbiter::Renderer renderer;
 
 
 char * test_char;
@@ -410,7 +410,7 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	glEnable(GL_TEXTURE_2D);
 
 	
-	//renderer.initFBO(allocated_width, allocated_height);
+	
 
 	
 	camera.setProjection(glm::mat4(1.0f) * glm::perspective(45.0f, ratio, 0.01f, 100.0f));
@@ -442,7 +442,7 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	planets.push_back(moon);	
 	
 	entities.push_back(moon);
-
+	renderer.m_entities.push_back(moon);
 
 	scene_bg.init();
 
@@ -466,6 +466,9 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	
 	
 	timer.start();
+
+	renderer.setCamera(camera);
+	renderer.init(allocated_width, allocated_height);
 	
 	return true;
 	
@@ -476,6 +479,8 @@ static void on_gl_resize(GtkGLArea * gl_area, gint width, gint height, gpointer 
 
 	float ratio = (float)width / height;	
 	camera.setProjection(glm::mat4(1.0f) * glm::perspective(45.0f, ratio, 0.01f, 100.0f));	
+
+	//renderer.init(width, height);
 
 }
 
@@ -491,11 +496,8 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	float ratio = (float)allocated_width / (float)allocated_height;
 		
 	
-	update_traj_test();
-	
+	update_traj_test();	
 	iss_sim_step();
-
-	
 
 	
 	gtk_label_set_text(GTK_LABEL(fps_label), fps_txt);
@@ -507,6 +509,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 		bitmap_font.setText((const char *) fps_txt);
 		bitmap_font.renderTextureFromAtlas();
 	}
+
 	GLCall(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 	glEnable(GL_DEPTH_TEST);
 
@@ -514,10 +517,8 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));	
 
 
-	//
 	glOrtho(-1.0 * ratio, 1.0 * ratio, -1.0, 1.0 , -1.0, 1.0);
 
-	//
 
 
 
@@ -534,9 +535,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	
-	
-	
-	//glEnable(GL_MULTISAMPLE_ARB);
+
 	float second_fraction = (float)timer.getDeltaMillis() / 1000.0;
 	float angle = (360.0) * (second_fraction /( 60 * 60 * 24.0));
 	earth->setRotationZ( earth->getRotation().z + (angle * time_scale));
@@ -550,17 +549,21 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	traj_test->setRotationZ( traj_test->getRotation().z + (angle * time_scale));
 
 
-	//traj_test->render(camera);
-	
 
-	
 
-	//~ unit_traj->render(camera);
-	
+	//GLCall(glDisable(GL_DEPTH_TEST));
+	//GLCall(glDisable(GL_CULL_FACE));
+	renderer.displayScreen();
+	//GLCall(glEnable(GL_DEPTH_TEST));
+	//GLCall(glEnable(GL_CULL_FACE));	
 
-	
 	
 	// render fonts
+
+	//GLCall(glViewport(0, 0, allocated_width, allocated_height));
+
+
+
 	if( b_show_fps)
 	{
 		GLCall(glDisable(GL_DEPTH_TEST));
@@ -577,19 +580,9 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 
 	}
 	
-	
-	glOrtho(-1.0 * ratio, 1.0 * ratio, -1.0, 1.0, -1.0, 1.0);
 
-	//renderer.render(camera);
-	//glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_CULL_FACE);
-	
-		//renderer.displayScreen();
-	
-	//glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
 
-	
+
 
 	gtk_gl_area_queue_render(gl_area);
 	

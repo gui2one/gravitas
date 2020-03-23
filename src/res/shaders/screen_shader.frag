@@ -11,8 +11,10 @@ void main()
 {          
 
 	float intensity = 0.5;
+
 	color = texture2D(u_tex,f_tex_coords) * vec4(intensity, intensity, intensity, 1.0);
 
+	color = vec4( 0.8, 0.0, 0.3, 0.5);
 }
 
 
