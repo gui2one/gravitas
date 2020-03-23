@@ -5,11 +5,11 @@
 #include "3d_utils.h"
 namespace Orbiter
 {
-class TrajectoryDisplay : public Entity3d
-{
+	class TrajectoryDisplay : public Entity3d
+	{
 	public:
 		TrajectoryDisplay();
-		
+
 		void init();
 		void update();
 		void render(Camera &camera);

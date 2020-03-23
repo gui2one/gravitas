@@ -3,17 +3,21 @@
 #include "../pch.h"
 #include "../core.h"
 
-class Entity3d
+namespace Orbiter
 {
+
+
+	class Entity3d
+	{
 	public:
 		Entity3d();
 		void init();
 		void update();
 
-		
-		
+		virtual void render(Camera &camera) {};
+
 		void applyTransforms();
-		
+
 		inline void setPosition(glm::vec3 pos)
 		{
 			m_position = pos;
@@ -29,7 +33,7 @@ class Entity3d
 		inline void setPositionZ(float val)
 		{
 			m_position.z = val;
-		}		
+		}
 		inline glm::vec3 getPosition()
 		{
 			return m_position;
@@ -39,7 +43,7 @@ class Entity3d
 		inline void setRotation(glm::vec3 vec)
 		{
 			m_rotation = vec;
-		}		
+		}
 		inline void setRotationX(float degrees)
 		{
 			m_rotation.x = degrees;
@@ -47,7 +51,7 @@ class Entity3d
 		inline void setRotationY(float degrees)
 		{
 			m_rotation.y = degrees;
-		}		
+		}
 		inline void setRotationZ(float degrees)
 		{
 			m_rotation.z = degrees;
@@ -64,17 +68,17 @@ class Entity3d
 		{
 			m_transforms = matrix;
 		}
-		
+
 		inline void setScale(glm::vec3 scale)
 		{
 			m_scale = scale;
 		}
-		
+
 		inline glm::vec3 getScale() const
 		{
 			return m_scale;
 		}
-		
+
 	private:
 
 		glm::mat4 m_transforms;
@@ -85,4 +89,5 @@ class Entity3d
 
 
 
-};
+	};
+} // end namespace

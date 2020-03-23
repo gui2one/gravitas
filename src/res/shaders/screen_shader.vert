@@ -1,10 +1,26 @@
-#version 120
+#version 330 core
+#extension GL_ARB_explicit_uniform_location : require
+#extension GL_ARB_explicit_attrib_location : require
 
-attribute vec3 pos;
-attribute vec2 texcoords;
+layout(location = 0) in vec3 positions;
+layout(location = 1) in vec2 tex_coords;
 
 
-void main(){
-	gl_Position = vec4(pos,1.0);
-	gl_TexCoord[0].st = texcoords;
+
+out vec2 f_tex_coords;
+
+
+
+
+
+void main()
+{         
+
+
+	gl_Position = 	vec4(positions,1.0);	
+	f_tex_coords =  tex_coords;
+	
+
 }
+
+

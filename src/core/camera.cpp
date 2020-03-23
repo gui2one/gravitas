@@ -1,5 +1,6 @@
 #include "camera.h"
-namespace Orbiter {
+namespace Orbiter 
+{
 
 
 Camera::Camera():m_fov_angle(45.0f), m_near(0.01f), m_far(100.0f), position(glm::vec3(1.0f, 0.0f, 0.0f)), target_position(glm::vec3(0.0f, 0.0f, 0.0f)), up_vector(glm::vec3(0.0f, 0.0f, 1.0f))

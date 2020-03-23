@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.8)
 set(CMAKE_TOOLCHAIN_FILE "D:/code_playground/gravitas/vcpkg/scripts/buildsystems/vcpkg.cmake")
 set(CMAKE_CXX_FLAGS "-std=c++17 -stdlib=libc++")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 project(gravitas)
+
+add_definitions(-DOGL_DEBUG)
 
 set(PACKAGES_PATH "D:/code_playground/gravitas/vcpkg/packages")
 set(SOURCES_PATH "src")

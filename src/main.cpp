@@ -5,6 +5,8 @@
 #include "trajectory_display.h"
 #include "iss_data.h"
 
+#include "renderer.h"
+
 #include "bitmap_font.h"
 #include "bitmap_font_atlas.h"
 
@@ -17,6 +19,8 @@
 FT_Library  ft_library;
 FT_Face     ft_face;
 
+
+Renderer renderer;
 
 
 char * test_char;
@@ -67,7 +71,7 @@ double time_scale = 1.0;
 GtkWidget * time_scale_spin;
 
 double system_scale = 1.0 / (6378.137 * 2.0); // max radius of earth at sea level (at the equator)
-TrajectoryDisplay traj_test, unit_traj;
+std::shared_ptr<TrajectoryDisplay> traj_test, unit_traj;
 bool traj_test_update_ready = false;
 unsigned int iss_max_positions = 2000;
 
@@ -159,7 +163,7 @@ static void update_traj_test()
 		
 		poly.vertices = vertices;	
 		
-		traj_test.polyline_object.setPolyline(poly);	
+		traj_test->polyline_object.setPolyline(poly);	
 		
 	}
 }
@@ -170,6 +174,8 @@ static void update_traj_test()
 std::vector<std::shared_ptr<OrbitalBody > > planets;
 std::shared_ptr<OrbitalBody> earth, moon;
 Orbiter::Camera camera;
+
+std::vector<std::shared_ptr<Orbiter::Entity3d>> entities;
 
 SceneBackground scene_bg;
 
@@ -255,18 +261,18 @@ enum
 void init_list(GtkWidget *list) 
 {
 	GtkListStore *store;
-	GtkCellRenderer *renderer;
+	GtkCellRenderer *cell_renderer;
 	GtkTreeViewColumn *column;
 
 
 
-	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes("ID", renderer,
+	cell_renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes("ID", cell_renderer,
 									"text", COLUMN_ID,
 									NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
-	column = gtk_tree_view_column_new_with_attributes("NAME", renderer,
+	column = gtk_tree_view_column_new_with_attributes("NAME", cell_renderer,
 									"text", COLUMN_NAME,
 									NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
@@ -378,6 +384,8 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	
 	
 
+	
+
 	font_shader.loadVertexShaderSource("../../src/res/shaders/font_shader.vert");
 	font_shader.loadFragmentShaderSource("../../src/res/shaders/font_shader.frag");
 	font_shader.createShader();	
@@ -399,6 +407,10 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	glEnable(GL_CULL_FACE);
 	//~ glCullFace(GL_BACK);	
 	
+	glEnable(GL_TEXTURE_2D);
+
+	
+	//renderer.initFBO(allocated_width, allocated_height);
 
 	
 	camera.setProjection(glm::mat4(1.0f) * glm::perspective(45.0f, ratio, 0.01f, 100.0f));
@@ -414,6 +426,10 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	earth->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	planets.push_back(earth);	
 	
+	entities.push_back(earth);
+
+	renderer.m_entities.push_back(earth);
+
 	moon = std::make_shared<OrbitalBody>();
 	
 	float dist_earth_moon = 363104.0f * system_scale; 
@@ -424,10 +440,18 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	moon->loadTexture("images/2k_moon.jpg");
 	moon->setPositionX(dist_earth_moon);
 	planets.push_back(moon);	
-		
+	
+	entities.push_back(moon);
+
+
 	scene_bg.init();
-	traj_test.init();
-	unit_traj.init();
+
+	traj_test = std::make_shared<TrajectoryDisplay>();
+	traj_test->init();
+	entities.push_back(traj_test);
+
+	unit_traj = std::make_shared<TrajectoryDisplay>();
+	unit_traj->init();
 	
 	
 	Orbiter::Polyline poly;
@@ -438,7 +462,7 @@ static gboolean on_realize(GtkGLArea * gl_area, GdkGLContext * context)
 	vtx.position = glm::vec3(0.5f, 1.0f, 0.0f);
 	poly.vertices.push_back(vtx);	
 	
-	unit_traj.polyline_object.setPolyline(poly);
+	unit_traj->polyline_object.setPolyline(poly);
 	
 	
 	timer.start();
@@ -463,8 +487,7 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 
 	int allocated_width = gtk_widget_get_allocated_width(GTK_WIDGET(gl_area));
 	int allocated_height = gtk_widget_get_allocated_height(GTK_WIDGET(gl_area));
-	//~ g_print("\nrectangle width: %d\n", allocated_width);	
-	
+		
 	float ratio = (float)allocated_width / (float)allocated_height;
 		
 	
@@ -487,51 +510,54 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	GLCall(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 	glEnable(GL_DEPTH_TEST);
 
-	glClearColor(0.0, 1.0, 0.0, 0.0);
+	glClearColor(0.0, 0.3, 0.3, 0.0);
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));	
 
 
-	
+	//
 	glOrtho(-1.0 * ratio, 1.0 * ratio, -1.0, 1.0 , -1.0, 1.0);
 
-	
+	//
 
+
+
+	
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
 	GLCall(glFrontFace(GL_CW));
 	GLCall(glCullFace(GL_BACK));	
-	
 		
 		scene_bg.render(camera);
-	
-		
-	
+
 	GLCall(glFrontFace(GL_CCW));
 	glDisable(GL_CULL_FACE);
-	
-		
-	
 	glEnable(GL_DEPTH_TEST);
 	
-	glEnable(GL_MULTISAMPLE_ARB);
+	
+	
+	//glEnable(GL_MULTISAMPLE_ARB);
 	float second_fraction = (float)timer.getDeltaMillis() / 1000.0;
 	float angle = (360.0) * (second_fraction /( 60 * 60 * 24.0));
-
-
 	earth->setRotationZ( earth->getRotation().z + (angle * time_scale));
-	earth->render(camera);			
-	
-	moon->render(camera);
-	
-	traj_test.setRotationZ( traj_test.getRotation().z + (angle * time_scale));
-	traj_test.render(camera);
+
+
+	for (auto entity : entities)
+	{
+		entity->render(camera);
+	}
+
+	traj_test->setRotationZ( traj_test->getRotation().z + (angle * time_scale));
+
+
+	//traj_test->render(camera);
 	
 
 	
 
-	//~ unit_traj.render(camera);
+	//~ unit_traj->render(camera);
 	
+
 	
 	
 	// render fonts
@@ -552,6 +578,19 @@ static gboolean render(GtkGLArea * gl_area, GdkGLContext *context)
 	}
 	
 	
+	glOrtho(-1.0 * ratio, 1.0 * ratio, -1.0, 1.0, -1.0, 1.0);
+
+	//renderer.render(camera);
+	//glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+	
+		//renderer.displayScreen();
+	
+	//glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
+
+	
+
 	gtk_gl_area_queue_render(gl_area);
 	
 	
